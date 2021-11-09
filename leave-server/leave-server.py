@@ -49,7 +49,7 @@ class LeaveGuildPlugin(commands.Cog):
             else:
                 return await ctx.send("Bot will not leave server {.name} as per your request".format(guild))
         except asyncio.TimeoutError:
-            return await ctx.send("OOps timeup bot will not leave the server.")
+            return await ctx.send("Oops timeup bot will not leave the server.")
 
     @commands.command()
     @commands.is_owner()

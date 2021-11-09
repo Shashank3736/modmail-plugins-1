@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.errors import GuildNotFound
+import asyncio
 
 class GuildConverter(commands.Converter):
     async def convert(self, ctx: commands.Context, guild_id: str):
@@ -34,18 +35,21 @@ class LeaveGuildPlugin(commands.Cog):
         def check(message: discord.Message):
             return message.author.id == ctx.author.id and message.channel.id == ctx.channel.id
 
-        await ctx.reply(embed=discord.Embed(title="Are you sure?", description=f"Type `yes` if you want bot to leave **{guild.name}** or type `no` if you do not want bot to leave the server.", colour=discord.Color.blurple()))
-        msg: discord.Message = await self.bot.wait_for("message", check=check)
-        if msg.content.lower() in ('yes', 'y', 'true', '1'):
-            try:
-                await guild.leave()
-                await ctx.send("Left! {.name}".format(guild))
-                return
-            except:
-                await ctx.send("Error!")
-                return
-        else:
-            return await ctx.send("Bot will not leave server {.name} as per your request".format(guild))
+        try:
+            await ctx.reply(embed=discord.Embed(title="Are you sure?", description=f"Type `yes` if you want bot to leave **{guild.name}** or type `cancel` if you want bot to not leave the server.", colour=discord.Color.blurple()))
+            msg: discord.Message = await self.bot.wait_for("message", check=check, timeout=30)
+            if msg.content.lower() in ('yes', 'y', 'true', '1'):
+                try:
+                    await guild.leave()
+                    await ctx.send("Left! {.name}".format(guild))
+                    return
+                except:
+                    await ctx.send("Error!")
+                    return
+            else:
+                return await ctx.send("Bot will not leave server {.name} as per your request".format(guild))
+        except asyncio.TimeoutError:
+            return await ctx.send("OOps timeup bot will not leave the server.")
 
     @commands.command()
     @commands.is_owner()
